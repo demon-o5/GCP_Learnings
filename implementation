@@ -1,0 +1,37 @@
+Q: How to implement this basic pipeline.
+
+Step	Action	Notes
+
+1	Create bucket--> gcs_read_bucket -->	Manual via Console
+2	Upload data/sales.csv to bucket	gs://gcs_read_bucket/data/sales.csv
+3	Sample data format with format below
+order_id,customer_id,product_name,quantity,amount
+4.create the service account with necessary permissions
+
+connections:
+Normally we need to do connection but while using composer in gcp it will connect by default.
+only we need to use below code while using operators
+gcp_conn_id='google_cloud_default'
+
+
+key learnings:
+✅ GCSListObjectsOperator → List files
+✅ GCSToBigQueryOperator → Load data (🏆 BEST!)
+❌ BigQueryCreateEmptyTableOperator → Deprecated
+✅ BranchPythonOperator → Conditional logic
+✅ BashOperator → gsutil commands
+
+sample code:
+
+from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
+
+load_to_bq = GCSToBigQueryOperator(
+    task_id='gcs_to_bq',
+    bucket='gcs_read_bucket',
+    source_objects=['data/sales.csv'],
+    destination_project_dataset_table='learning-project-482611.learning_1.sales_1',
+    skip_leading_rows=1,
+    autodetect=True,
+    gcp_conn_id='google_cloud_default'
+)
+
